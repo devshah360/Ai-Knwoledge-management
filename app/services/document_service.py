@@ -6,6 +6,7 @@ from app.services.elastic_service import index_document
 from app.services.embedding_service import generate_embedding
 from app.services.chunk_service import chunk_text
 from app.services.vectorstore_service import add_document_chunks
+from tasks import process_document_tasks
 
 UPLOADED_FOLDER = "app/uploads"
 
@@ -41,7 +42,7 @@ def save_uploaded_file(
         chunks = []
 
         if extracted_text:
-                chunks = chunk_text(extracted_text)
+                process_document_tasks.delay(new_document.id,extracted_text)
         
         new_document = Document(
                 filename = file.filename,
