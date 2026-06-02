@@ -2,9 +2,12 @@ from langchain_ollama import OllamaLLM
 
 llm = OllamaLLM(model="tinyllama")
 
-def response_agent(question,context):
+def response_agent(question,context,memory_text=""):
 
         prompt = f"""
+        Conversation History:
+        {memory_text}
+
         Context:
         {context}
 
