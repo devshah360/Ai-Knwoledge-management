@@ -16,6 +16,7 @@ from app.routes.chat_routes import router as chat_router
 from app.routes.dashboard_routes import router as dashboard_router
 from app.routes.serach_routes import router as search_router
 from app.routes.history_routes import router as history_router
+from app.routes.knowledge_routes import router as knowledge_router
 
 oauth2_scheme = OAuth2PasswordBearer(
         tokenUrl = "/auth/login"
@@ -34,6 +35,7 @@ app.include_router(chat_router)
 app.include_router(dashboard_router)
 app.include_router(search_router)
 app.include_router(history_router)
+app.include_router(knowledge_router)
 
 @app.get("/")
 def home():
