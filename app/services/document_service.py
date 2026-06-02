@@ -36,14 +36,8 @@ def save_uploaded_file(
         if extracted_text :
                 embedding = generate_embedding(extracted_text[:1000])
 
-        #print("Document imported from:", Document.__module__)
-        #print("Columns:", Document.__table__.columns.keys())
-
         chunks = []
 
-        if extracted_text:
-                process_document_tasks.delay(new_document.id,extracted_text)
-        
         new_document = Document(
                 filename = file.filename,
                 filepath = file_location,
@@ -54,12 +48,17 @@ def save_uploaded_file(
                 owner_id = current_user.id
         ) 
 
-        if chunks:
-                add_document_chunks(new_document.id,chunks)
-                
         db.add(new_document)
         db.commit()
         db.refresh(new_document)
+        
+        if extracted_text:
+                process_document_tasks.delay(new_document.id,extracted_text)
+
+        if chunks:
+                add_document_chunks(new_document.id,chunks)
+                
+        
         index_document(new_document)
         return new_document
 

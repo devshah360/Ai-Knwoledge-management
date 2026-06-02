@@ -1,14 +1,6 @@
-from app.services.vectorstore_service import retrieve_chunks
+from app.services.search_service import hybrid_search
 
 def search_agent(query):
-        docs = retrieve_chunks(query,top_k=3)
-        context = "\n\n".join([
-                doc.page_content
-                for doc in docs
-        ])
+        results = hybrid_search(query)
 
-        return {
-                "context":context,
-                "document_found":len(docs)
-        }
-#Question->Retriver->Relative Context 
+        return results

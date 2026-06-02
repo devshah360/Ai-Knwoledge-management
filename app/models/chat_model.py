@@ -1,4 +1,4 @@
-from sqlalchemy import Column,String,Integer,ForeignKey,DateTime
+from sqlalchemy import Column,String,Integer,ForeignKey,DateTime,Text
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -10,6 +10,8 @@ class ChatHistory(Base):
         question = Column(String)
 
         answer = Column(String)
+
+        sources = Column(Text)
 
         user_id = Column(Integer,ForeignKey("users.id"))
 

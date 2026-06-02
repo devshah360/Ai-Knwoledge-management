@@ -13,11 +13,11 @@ def add_document_chunks(document_id,chunks):
                 ids.append(f"{document_id}_{index}")
                 metadatas.append({"document_id":document_id})
                 
-                vector_store.add_texts(
-                        texts=chunks,
-                        ids=ids,
-                        metadatas=metadatas
-                )
+        vector_store.add_texts(
+                texts=chunks,
+                ids=ids,
+                 metadatas=metadatas
+         )
 def retrieve_chunks(query,top_k=3):
         retriever = vector_store.as_retriever(search_kwargs = {"k":top_k})
         docs = retriever.invoke(query)

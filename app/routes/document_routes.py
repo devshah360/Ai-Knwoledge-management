@@ -19,7 +19,7 @@ def get_documents(
         documents = db.query(Document).filter(Document.owner_id == current_user.id).all()
         return documents
 
-@router.get("{/document_id}")
+@router.get("/{document_id}")
 def get_document(
         document_id: int,
         db:Session = Depends(get_db),
@@ -54,8 +54,6 @@ def upload_document(
                         detail="Invalid File Type"
                 )
         MAX_SIZE = 5*1024*1024
-        
-        #return {"filename":file.filename}
         
         document = save_uploaded_file(
                 file,

@@ -1,46 +1,65 @@
 from langchain_ollama import OllamaLLM
-from app.services.vectorstore_service import retrieve_chunks
-from app.services.memory_service import save_message,get_memory
+from app.services.search_service import hybrid_search
+from app.services.search_analytics_service import save_search
+from app.services.memory_service import memory_to_text,get_recent_memory
+from app.models.chat_model import ChatHistory
 
 llm = OllamaLLM(model="tinyllama")
 
-def rag_chat(question,top_k=3):
-    docs = retrieve_chunks(question,top_k)
-    context = "\n\n".join([
-        doc.page_content
-        for doc in docs
-    ])
+def rag_chat(question,db,user_id,top_k=3):
+    print("start")
+    results = hybrid_search(question)
 
-    #memory = get_memory()
+    context = ""
+    for item in results["elastic_results"]:
+        context += (
+            item["_source"]
+            ["content"]
+            + "\n"
+        )
 
-    #memory_text = "\n".join([
-       # f"{msg['role']}:{msg['content']}"
-      #  for msg in memory
-       # ])
-    
-#    Conversation History:
-#    {memory_text}
- 
+    for doc in results["vector_results"]:
+        context += (
+            doc.page_content
+            + "\n"
+        )
+
+    previous_chats = get_recent_memory(
+        db,
+        user_id,
+        limit=5
+    )
+
+    memory_text = memory_to_text(previous_chats)
+
     prompt = f"""
+    Conversation History:
 
+    {memory_text}
 
     Context:
+
     {context}
 
     Question:
+
     {question}
 
-    Answer clearly using only the provided context.complex"""
+    Answer based on conversational history and provided context."""
 
     answer = llm.invoke(prompt)
+    
+    save_search(db,question)
 
-    save_message("user",question)
-    save_message("assistant",answer)
+    chat = ChatHistory(question=question,answer=answer,sources="RAG",user_id = user_id)
 
+    print("reached")
+    db.add(chat)
+    db.commit()
+    print("store")
+   
     return {
         "answer":answer,
-        "sources":[
-            doc.page_content[:200]
-            for doc in docs
-        ]
+        "context":context
     }
+

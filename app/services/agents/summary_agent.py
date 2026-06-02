@@ -11,6 +11,4 @@ def summary_agent(text):
         {text}
         """
 
-        summary = llm.invoke(prompt)
-
-        return summary
+        return llm.invoke(prompt) 

@@ -1,5 +1,0 @@
-INVOICE
-
-Invoice Number : INV-1001
-Customer Name : John Doe
-Total Amount : $150
