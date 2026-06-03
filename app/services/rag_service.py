@@ -1,22 +1,39 @@
 from langchain_ollama import OllamaLLM
+from app.core.config import OLLAMA_URL
 from app.services.search_service import hybrid_search
 from app.services.search_analytics_service import save_search
-from app.services.memory_service import memory_to_text,get_recent_memory
+from app.services.memory_service import (
+    memory_to_text,
+    get_recent_memory
+)
 from app.models.chat_model import ChatHistory
-from app.services.mongo_service import get_chat_memory,save_chat_memory,build_memory_context
+from app.services.mongo_service import (
+    get_chat_memory,
+    save_chat_memory,
+    build_memory_context
+)
+
+llm = OllamaLLM(
+    model="tinyllama",
+    base_url=OLLAMA_URL
+)
 
 
-llm = OllamaLLM(model="tinyllama")
-
-def rag_chat(question,db,user_id,top_k=3):
+def rag_chat(
+    question,
+    db,
+    user_id,
+    top_k=3
+):
     print("start")
+
     results = hybrid_search(question)
 
     context = ""
+
     for item in results["elastic_results"]:
         context += (
-            item["_source"]
-            ["content"]
+            item["_source"]["content"]
             + "\n"
         )
 
@@ -32,43 +49,62 @@ def rag_chat(question,db,user_id,top_k=3):
         limit=5
     )
 
-    memory_text = memory_to_text(previous_chats)
+    memory_text = memory_to_text(
+        previous_chats
+    )
 
-    memory = get_chat_memory(user_id) 
+    memory = get_chat_memory(
+        user_id
+    )
 
-    memory_context = build_memory_context(memory)
-
+    memory_context = build_memory_context(
+        memory
+    )
 
     prompt = f"""
-    Previous Conversation:
+Previous Conversation:
 
-    {memory_context}
+{memory_context}
 
-    Context:
+Context:
 
-    {context}
+{context}
 
-    Question:
+Question:
 
-    {question}
+{question}
 
-    Answer clearly."""
+Answer clearly.
+"""
 
     answer = llm.invoke(prompt)
-    
-    save_chat_memory(user_id,question,answer)
-    
-    save_search(db,question)
 
-    chat = ChatHistory(question=question,answer=answer,sources="RAG",user_id = user_id)
+    save_chat_memory(
+        user_id,
+        question,
+        answer
+    )
+
+    save_search(
+        db,
+        question
+    )
+
+    chat = ChatHistory(
+        question=question,
+        answer=answer,
+        sources="RAG",
+        user_id=user_id
+    )
 
     print("reached")
+
     db.add(chat)
     db.commit()
-    print("store")
-   
-    return {
-        "answer":answer,
-        "context":context
-    }
 
+    print("store")
+
+    return {
+        "answer": answer,
+        "context": context
+    }

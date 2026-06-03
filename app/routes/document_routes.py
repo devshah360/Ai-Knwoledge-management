@@ -5,6 +5,9 @@ from app.middlewave.auth_middleware import get_current_user
 from app.schemas.document_schema import DocumentResponse
 from app.services.document_service import save_uploaded_file
 from app.models.document_model import Document
+from app.utils.file_validator import validate_file
+from app.services.audit_service import create_log
+from celery.result import AsyncResult
 
 router = APIRouter(
         prefix="/documents",
@@ -19,22 +22,38 @@ def get_documents(
         documents = db.query(Document).filter(Document.owner_id == current_user.id).all()
         return documents
 
-@router.get("/{document_id}")
-def get_document(
+
+
+
+@router.delete("/{document_id}")
+def delete_document(
         document_id: int,
-        db:Session = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user = Depends(get_current_user)
 ):
         document = db.query(Document).filter(
                 Document.id == document_id,
-                Document.owner_id == current_user.id).first()
-        
+                Document.owner_id == current_user.id
+        ).first()
+
         if not document:
                 raise HTTPException(
                         status_code=404,
-                        detail="document not found"
+                        detail="Document not found"
                 )
-        return document
+
+        create_log(
+                db,
+                current_user.id,
+                "Document Delete"
+        )
+
+        db.delete(document)
+        db.commit()
+
+        return {
+                "message": "Document deleted successfully"
+        }
 
 
 @router.post("/upload",response_model=DocumentResponse)
@@ -43,17 +62,21 @@ def upload_document(
         db:Session = Depends(get_db),
         current_user = Depends(get_current_user)
 ):
-        allowed_types = [
-                "application/pdf",
-                "text/plain"
-        ]
+        try:
+                content = file.file.read()
 
-        if file.content_type not in allowed_types:
-                raise HTTPException(
-                        status_code=400,
-                        detail="Invalid File Type"
+                validate_file(
+                file.filename,
+                len(content)
                 )
-        MAX_SIZE = 5*1024*1024
+
+                file.file.seek(0)
+
+        except Exception as e:
+                raise HTTPException(
+                status_code=400,
+                detail=str(e)
+         )
         
         document = save_uploaded_file(
                 file,
@@ -61,3 +84,12 @@ def upload_document(
                 db
         )
         return document
+
+@router.get("/status/{task_id}")
+def task_status(task_id: str):
+
+    task = AsyncResult(task_id)
+
+    return {
+        "status": task.status
+    }

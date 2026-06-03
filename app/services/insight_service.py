@@ -14,3 +14,15 @@ def generate_dashboard_insight(stats):
         insight = llm.invoke(prompt)
 
         return insight
+
+from app.services.insight_service import (
+    generate_dashboard_insight
+)
+
+def generate_insights(db):
+
+    return {
+        "most_used_feature": "chat",
+        "most_active_agent": "search_agent",
+        "top_search": "FastAPI"
+    }

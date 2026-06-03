@@ -19,13 +19,27 @@ def elastic_search(query:str):
         return result["hits"]["hits"]
 
 def semantic_search(query:str):
-        return retrieve_chunks(query,top_k=5)
+        return retrieve_chunks(query,top_k=3)
 
-def hybrid_search(query:str):
-        elastic_results = elastic_search(query)
-        vector_results = semantic_search(query)
+def hybrid_search(query: str):
 
-        return{
-                "elastic_results":elastic_results,
-                "vector_results":vector_results
-        }
+    elastic_results = elastic_search(query)
+    vector_results = semantic_search(query)
+
+    results = []
+
+    for item in elastic_results:
+        item["source"] = "elastic"
+        results.append(item)
+
+    for item in vector_results:
+        item["source"] = "semantic"
+        results.append(item)
+
+    ranked_results = sorted(
+        results,
+        key=lambda x: x.get("score", 0),
+        reverse=True
+    )
+
+    return ranked_results

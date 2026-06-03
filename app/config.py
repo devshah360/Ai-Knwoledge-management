@@ -21,3 +21,4 @@ MONGO_URL = os.getenv("MONGO_URL")
 REDIS_URL = os.getenv("REDIS_URL")
 
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
+

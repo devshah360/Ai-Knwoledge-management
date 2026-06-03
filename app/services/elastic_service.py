@@ -41,3 +41,12 @@ def search_documents(query):
                 })
 
                 return results
+        
+def remove_deleted_document(
+    document_id
+):
+
+    es.delete(
+        index="documents",
+        id=document_id
+    )
