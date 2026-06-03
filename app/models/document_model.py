@@ -16,6 +16,12 @@ class Document(Base):
 
         filetype = Column(String)
 
+        uploaded_by = Column(Integer)
+
+        file_size = Column(Integer)
+
+        file_type = Column(String)
+
         content = Column(Text)
 
         owner_id = Column(Integer,ForeignKey("users.id"))

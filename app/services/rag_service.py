@@ -3,6 +3,8 @@ from app.services.search_service import hybrid_search
 from app.services.search_analytics_service import save_search
 from app.services.memory_service import memory_to_text,get_recent_memory
 from app.models.chat_model import ChatHistory
+from app.services.mongo_service import get_chat_memory,save_chat_memory,build_memory_context
+
 
 llm = OllamaLLM(model="tinyllama")
 
@@ -32,10 +34,15 @@ def rag_chat(question,db,user_id,top_k=3):
 
     memory_text = memory_to_text(previous_chats)
 
-    prompt = f"""
-    Conversation History:
+    memory = get_chat_memory(user_id) 
 
-    {memory_text}
+    memory_context = build_memory_context(memory)
+
+
+    prompt = f"""
+    Previous Conversation:
+
+    {memory_context}
 
     Context:
 
@@ -45,9 +52,11 @@ def rag_chat(question,db,user_id,top_k=3):
 
     {question}
 
-    Answer based on conversational history and provided context."""
+    Answer clearly."""
 
     answer = llm.invoke(prompt)
+    
+    save_chat_memory(user_id,question,answer)
     
     save_search(db,question)
 

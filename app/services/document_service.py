@@ -59,7 +59,7 @@ def save_uploaded_file(
                 add_document_chunks(new_document.id,chunks)
                 
         
-        index_document(new_document)
+        #index_document(new_document)
         return new_document
 
         

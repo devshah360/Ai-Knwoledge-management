@@ -17,6 +17,11 @@ from app.routes.dashboard_routes import router as dashboard_router
 from app.routes.serach_routes import router as search_router
 from app.routes.history_routes import router as history_router
 from app.routes.knowledge_routes import router as knowledge_router
+from app.routes.activity_routes import router as activity_router
+from app.routes.admin_routes import router as admin_router
+from app.routes.user_dashboard import router as current_user_router
+from app.utils.exception_handler import global_exception_handler
+from app.middlewave.logging_middleware import LoggingMiddleware
 
 oauth2_scheme = OAuth2PasswordBearer(
         tokenUrl = "/auth/login"
@@ -36,6 +41,11 @@ app.include_router(dashboard_router)
 app.include_router(search_router)
 app.include_router(history_router)
 app.include_router(knowledge_router)
+app.include_router(activity_router)
+app.include_router(admin_router)
+app.include_router(current_user_router)
+app.add_exception_handler(Exception,global_exception_handler)
+app.add_middleware(LoggingMiddleware)
 
 @app.get("/")
 def home():
