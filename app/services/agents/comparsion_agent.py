@@ -4,17 +4,26 @@ llm = OllamaLLM(
         model="tinyllama"
 )
 
-def compare_document(doc1,doc2):
-        prompt=f"""
+def compare_document(doc1, doc2):
+    print("DOC1:", doc1[:500])
+    print("DOC2:", doc2[:500])
 
-        Compare:
+    prompt = f"""
+Compare the following documents.
 
-        Document 1:
-        {doc1}
+Document 1:
+{doc1}
 
-        Document 2:
-        {doc2}
+Document 2:
+{doc2}
 
-        Show similarites and differences."""
+Only use information from these documents.
+Show:
+1. Similarities
+2. Differences
+"""
 
-        return llm.invoke(prompt)
+    print(prompt[:2000])
+
+    return llm.invoke(prompt)
+
