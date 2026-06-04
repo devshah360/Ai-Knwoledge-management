@@ -31,6 +31,7 @@ from app.routes.migration_routes import router as migration_router
 from app.routes.monitoring_routes import router as monitoring_router
 from app.middlewave.metrics_middleware import MetricsMiddleware
 from app.routes.system_routes import router as system_router
+from app.routes.sync_dashboard_routes import router as sync_dashboard_router
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login"
@@ -72,6 +73,7 @@ app.include_router(dashboard_router)
 app.include_router(monitoring_router)
 app.include_router(migration_router)
 app.include_router(system_router)
+app.include_router(sync_dashboard_router)
 
 
 app.add_middleware(
