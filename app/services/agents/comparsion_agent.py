@@ -7,7 +7,7 @@ llm = OllamaLLM(
 def compare_document(doc1,doc2):
         prompt=f"""
 
-        Compare:
+        Compare these two documents:
 
         Document 1:
         {doc1}
