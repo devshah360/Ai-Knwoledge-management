@@ -1,4 +1,4 @@
-from celery_worker import celery
+from app.celery_worker import celery
 
 from app.services.migration_service import (
     migrate_all_documents

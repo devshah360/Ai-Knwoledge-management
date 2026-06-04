@@ -27,54 +27,40 @@ def get_kpis(db):
 def search_trend(db):
 
     result = (
-
         db.query(
-
-            func.date(
-                SearchHistory.created_at
-            ),
-
-            func.count(
-                SearchHistory.id
-            )
+            func.date(SearchHistory.created_at),
+            func.count(SearchHistory.id)
         )
-
         .group_by(
-            func.date(
-                SearchHistory.created_at
-            )
+            func.date(SearchHistory.created_at)
         )
-
         .all()
     )
 
-    return result
+    return [
+        {
+            "date": str(row[0]),
+            "count": row[1]
+        }
+        for row in result
+    ]
 
 def upload_trend(db):
 
     result = (
 
-        db.query(
-
-            func.date(
-                Document.created_at
-            ),
-
-            func.count(
-                Document.id
-            )
-        )
-
-        .group_by(
-            func.date(
-                Document.created_at
-            )
-        )
-
+        db.query(func.date(Document.created_at),func.count(Document.id))
+        .group_by(func.date(Document.created_at))
         .all()
     )
 
-    return result
+    return [
+        {
+        "date": str(row[0]),
+        "count": row[1]
+        }
+        for row in result
+    ]
 
 def activity_chart(db):
 
@@ -84,9 +70,7 @@ def activity_chart(db):
 
             AuditLog.action,
 
-            func.count(
-                AuditLog.id
-            )
+            func.count(AuditLog.id)
         )
 
         .group_by(
@@ -96,7 +80,17 @@ def activity_chart(db):
         .all()
     )
 
-    return result
+    activites = db.query(AuditLog).all()
+
+    return [
+        {
+            "id": activity.id,
+            "action": activity.action,
+            "user_id": activity.user_id,
+            "created_at": str(activity.created_at)
+        }
+        for activity in activites
+    ]
 
 def top_searches(db):
 
@@ -126,7 +120,13 @@ def top_searches(db):
         .all()
     )
 
-    return result
+    return [
+        {
+        "query": row[0],
+        "count": row[1]
+        }
+        for row in result
+    ]
 
 def active_users(db):
 
@@ -156,4 +156,10 @@ def active_users(db):
         .all()
     )
 
-    return result
+    return [
+        {
+        "user": row[0],
+        "count": row[1]
+        }
+        for row in result
+    ]

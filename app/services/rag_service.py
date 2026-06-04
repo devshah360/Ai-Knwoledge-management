@@ -18,7 +18,6 @@ llm = OllamaLLM(
     base_url=OLLAMA_URL
 )
 
-
 def rag_chat(
     question,
     db,

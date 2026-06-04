@@ -7,7 +7,9 @@ from app.services.document_service import save_uploaded_file
 from app.models.document_model import Document
 from app.utils.file_validator import validate_file
 from app.services.audit_service import create_log
+from app.celery_worker import celery
 from celery.result import AsyncResult
+
 
 router = APIRouter(
         prefix="/documents",
@@ -88,8 +90,9 @@ def upload_document(
 @router.get("/status/{task_id}")
 def task_status(task_id: str):
 
-    task = AsyncResult(task_id)
+    task = AsyncResult(task_id,app=celery)
 
     return {
-        "status": task.status
-    }
+           "task_id":task_id,
+           "status": task.status
+        }

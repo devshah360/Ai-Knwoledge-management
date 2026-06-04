@@ -69,7 +69,7 @@ def total_chats(
         }
 
 
-@router.get("/searches")
+@router.get("/searches",response_model=dict)
 def total_searches(
         db: Session = Depends(get_db),
         current_user = Depends(get_current_user)
@@ -82,12 +82,17 @@ def total_searches(
                 "Admin Access"
         )
 
+        searches = (db.query(SearchHistory).order_by(SearchHistory.id.desc()).limit(50).all())
         return {
-                "searches": db.query(SearchHistory)
-                .order_by(SearchHistory.id.desc())
-                .limit(50)
-                .all()
-        }
+                "searches": [{
+                        "id":s.id,
+                        "query":s.query,
+                        "created_at":s.created_at
+                }
+                for s in searches
+        ]
+        
+}
 
 
 @router.get("/activites")

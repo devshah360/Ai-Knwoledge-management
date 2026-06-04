@@ -5,13 +5,10 @@ services:
   api:
     build: .
     container_name: kms_api
-
     ports:
       - "8000:8000"
-
     env_file:
       - .env
-
     depends_on:
       - postgres
       - mongo
@@ -19,109 +16,70 @@ services:
       - elastic
 
   postgres:
-
     image: postgres:16
-
     container_name: kms_postgres
-
     environment:
       POSTGRES_DB: kms
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-
     ports:
       - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   mongo:
-
     image: mongo
-
     container_name: kms_mongo
-
     ports:
       - "27017:27017"
-
     volumes:
       - mongo_data:/data/db
 
   redis:
-
     image: redis
-
     container_name: kms_redis
-
     ports:
       - "6379:6379"
 
   elastic:
-
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
-
     container_name: kms_elastic
-
     environment:
       - discovery.type=single-node
-
     ports:
       - "9200:9200"
 
   celery:
-
     build: .
-
     container_name: kms_celery
-
     command: celery -A app.celery_worker worker --loglevel=info
-
     depends_on:
       - redis
-
-volumes:
-
-  postgres_data:
-
-  mongo_data:
-
-  services:
 
   ollama:
     image: ollama/ollama
     container_name: ollama
-
     ports:
       - "11434:11434"
-
     volumes:
-      - ollama:/root/.ollama
-
-volumes:
-  ollama:
+      - ollama_data:/root/.ollama
 
   nginx:
-
-  image: nginx
-
-  container_name: kms_nginx
-
-  ports:
-    - "80:80"
-
-  volumes:
-    - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-
-  depends_on:
-    - api
-
+    image: nginx
+    container_name: kms_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
     healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/system/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  test:
-    ["CMD","curl","-f","http://localhost:8000/system/health"]
-
-  interval: 30s
-
-  timeout: 10s
-
-  retries: 3
+volumes:
+  postgres_data:
+  mongo_data:
+  ollama_data:

@@ -7,7 +7,7 @@ from app.models.user_model import User
 from app.utils.security import SECRET_KEY,ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(
-        tokenUrl = "/auth/login"
+        tokenUrl = "/api/v1/auth/login"
 ) 
 
 def get_current_user(token:str = Depends(oauth2_scheme), db : Session = Depends(get_db)): #method for getting user token and storing it in database

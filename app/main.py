@@ -26,10 +26,11 @@ from app.routes.user_dashboard import router as current_user_router
 from app.utils.exception_handler import global_exception_handler
 from app.middlewave.logging_middleware import LoggingMiddleware
 from app.core.rate_limit import limiter
-from app.routes.dashboard_routes import (
-    router as dashboard_router
-)
+from app.routes.dashboard_routes import router as dashboard_router
+from app.routes.migration_routes import router as migration_router
+from app.routes.monitoring_routes import router as monitoring_router
 from app.middlewave.metrics_middleware import MetricsMiddleware
+from app.routes.system_routes import router as system_router
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login"
@@ -68,6 +69,11 @@ app.include_router(activity_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
 app.include_router(current_user_router, prefix="/api/v1")
 app.include_router(dashboard_router)
+app.include_router(monitoring_router)
+app.include_router(migration_router)
+app.include_router(system_router)
+
+
 app.add_middleware(
     MetricsMiddleware
 )
@@ -120,7 +126,7 @@ def admin_dashboard(
 
 
 @app.get("/manager")
-def manager_dahboard(
+def manager_dashboard(
     current_user=Depends(manager_required)
 ):
     return {

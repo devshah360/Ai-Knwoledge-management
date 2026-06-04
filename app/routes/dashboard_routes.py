@@ -5,15 +5,13 @@ from app.middlewave.auth_middleware import get_current_user
 from app.services.analytics_service import get_dashboard_state
 from app.services.chart_service import document_upload_chart
 from app.services.insight_service import generate_dashboard_insight
-from app.services.analytics_service import (
-    get_dashboard_state,
-    search_trend,
+from app.services.analytics_service import get_dashboard_state
+from app.services.dashboard_service import (search_trend,
     upload_trend,
     activity_chart,
     top_searches,
     active_users
 )
-
 router = APIRouter(
         prefix="/dashboard",
         tags=["Dashboard"]
