@@ -8,7 +8,8 @@ def compare_document(doc1, doc2):
     print("DOC1:", doc1[:500])
     print("DOC2:", doc2[:500])
 
-        Compare:
+    prompt = f"""
+        Compare these two documents:
 
 Document 1:
 {doc1}
