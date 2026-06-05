@@ -22,3 +22,9 @@ def retrieve_chunks(query,top_k=3):
         retriever = vector_store.as_retriever(search_kwargs = {"k":top_k})
         docs = retriever.invoke(query)
         return docs
+
+def delete_document_chunks(document_id):
+        vector_store.delete(
+                where={"document_id": document_id}
+        )
+        

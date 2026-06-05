@@ -37,7 +37,9 @@ def save_uploaded_file(
                 embedding = generate_embedding(extracted_text[:1000])
 
         chunks = []
-
+        if extracted_text:
+                chunks = chunk_text(extracted_text)
+                
         new_document = Document(
                 filename = file.filename,
                 filepath = file_location,
@@ -54,6 +56,8 @@ def save_uploaded_file(
         
         if extracted_text:
                 process_document_tasks.delay(new_document.id,extracted_text)
+
+        print("Chunks Genereated:", len(chunks))
 
         if chunks:
                 add_document_chunks(new_document.id,chunks)

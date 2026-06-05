@@ -6,10 +6,10 @@ from app.schemas.document_schema import DocumentResponse
 from app.services.document_service import save_uploaded_file
 from app.models.document_model import Document
 from app.utils.file_validator import validate_file
-from app.services.audit_service import create_log
+from app.services.elastic_service import remove_deleted_document
 from app.celery_worker import celery
 from celery.result import AsyncResult
-
+from app.services.vectorstore_service import delete_document_chunks
 
 router = APIRouter(
         prefix="/documents",
@@ -44,11 +44,9 @@ def delete_document(
                         detail="Document not found"
                 )
 
-        create_log(
-                db,
-                current_user.id,
-                "Document Delete"
-        )
+        delete_document_chunks(document_id)
+
+        remove_deleted_document(document_id)
 
         db.delete(document)
         db.commit()

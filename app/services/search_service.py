@@ -26,23 +26,15 @@ def hybrid_search(query: str):
     elastic_results = elastic_search(query)
     vector_results = semantic_search(query)
 
-    #results = []
+    print("\n=== ELASTIC RESULTS ===")
+    for item in elastic_results:
+        print(item["_source"])
 
-   # for item in elastic_results:
-      #  item["source"] = "elastic"
-      #  results.append(item)
-
-    #for item in vector_results:
-     #   item["source"] = "semantic"
-      #  results.append(item)
-
-   # ranked_results = sorted(
-     #   results,
-      #  key=lambda x: x.get("score", 0),
-     #   reverse=True
-   # )
+    print("\n=== VECTOR RESULTS ===")
+    for doc in vector_results:
+        print(doc.page_content[:300])
 
     return {
-          "elastic_results":elastic_results,
-          "vector_results":vector_results
+        "elastic_results": elastic_results,
+        "vector_results": vector_results
     }

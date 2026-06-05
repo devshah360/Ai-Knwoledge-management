@@ -1,8 +1,10 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
-es = Elasticsearch("https://localhost:9200",basic_auth=("elastic", #"DYPV55BW5vAwSYRVeVS="#
-                                                        "Devshah@1"),verify_certs=False)
+es = Elasticsearch("https://localhost:9200",basic_auth=("elastic", "t-KEPBwQn4dVQfRXBxox"
+                                                        #"Devshah@1"
+                                                        ),verify_certs=False)
+
 INDEX_NAME = "documents"
 
 

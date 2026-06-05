@@ -1,7 +1,6 @@
 from langchain_ollama import OllamaLLM
-
 llm = OllamaLLM(
-        model="tinyllama"
+        model = "qwen2.5:3b",
 )
 
 def summary_agent(text):

@@ -6,11 +6,7 @@ from app.routes.user_routes import router as user_router
 from app.routes.auth_routes import router as auth_router
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends
-from app.middlewave.auth_middleware import (
-    get_current_user,
-    admin_required,
-    manager_required
-)
+from app.middlewave.auth_middleware import get_current_user,admin_required,manager_required
 from app.models.document_model import Document
 from app.routes.document_routes import router as document_router
 from app.routes.serach_routes import router as serach_router
@@ -32,6 +28,7 @@ from app.routes.monitoring_routes import router as monitoring_router
 from app.middlewave.metrics_middleware import MetricsMiddleware
 from app.routes.system_routes import router as system_router
 from app.routes.sync_dashboard_routes import router as sync_dashboard_router
+from app.routes.graph_routes import router as graph_router
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login"
@@ -56,25 +53,25 @@ app.add_middleware(
 app.add_middleware(LoggingMiddleware)
 
 # API Versioning
-app.include_router(user_router, prefix="/api/v1")
-app.include_router(auth_router, prefix="/api/v1")
-app.include_router(document_router, prefix="/api/v1")
-app.include_router(serach_router, prefix="/api/v1")
-app.include_router(semantic_router, prefix="/api/v1")
-app.include_router(chat_router, prefix="/api/v1")
-app.include_router(dashboard_router, prefix="/api/v1")
-app.include_router(search_router, prefix="/api/v1")
-app.include_router(history_router, prefix="/api/v1")
-app.include_router(knowledge_router, prefix="/api/v1")
-app.include_router(activity_router, prefix="/api/v1")
-app.include_router(admin_router, prefix="/api/v1")
-app.include_router(current_user_router, prefix="/api/v1")
+app.include_router(user_router)
+app.include_router(auth_router)
+app.include_router(document_router)
+app.include_router(serach_router)
+app.include_router(semantic_router)
+app.include_router(chat_router)
+app.include_router(dashboard_router)
+app.include_router(search_router)
+app.include_router(history_router)
+app.include_router(knowledge_router)
+app.include_router(activity_router)
+app.include_router(admin_router)
+app.include_router(current_user_router)
 app.include_router(dashboard_router)
 app.include_router(monitoring_router)
 app.include_router(migration_router)
 app.include_router(system_router)
 app.include_router(sync_dashboard_router)
-
+app.include_router(graph_router)
 
 app.add_middleware(
     MetricsMiddleware
@@ -124,6 +121,7 @@ def admin_dashboard(
 ):
     return {
         "messsage": f"Welcome Admin {current_user.username}"
+
     }
 
 

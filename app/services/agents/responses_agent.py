@@ -1,6 +1,6 @@
 from langchain_ollama import OllamaLLM
 
-llm = OllamaLLM(model="tinyllama")
+llm = OllamaLLM(model = "qwen2.5:3b",)
 
 def response_agent(question,context,memory_text=""):
 

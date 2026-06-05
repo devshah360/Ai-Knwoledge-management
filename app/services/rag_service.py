@@ -1,4 +1,6 @@
+from celery import chunks
 from langchain_ollama import OllamaLLM
+from opentelemetry import context
 from app.core.config import OLLAMA_URL
 from app.services.search_service import hybrid_search
 from app.services.search_analytics_service import save_search
@@ -14,67 +16,67 @@ from app.services.mongo_service import (
 )
 
 llm = OllamaLLM(
-    model="tinyllama",
+    model = "qwen2.5:3b",
     base_url=OLLAMA_URL
 )
 
-def rag_chat(
-    question,
-    db,
-    user_id,
-    top_k=3
-):
+def rag_chat(question,db,user_id,top_k=3):
+
     print("start")
 
     results = hybrid_search(question)
 
-    context = ""
+    print("ELASTIC COUNT:", len(results["elastic_results"]))
+    print("VECTOR COUNT:", len(results["vector_results"]))
+    
+    seen = set()
+    chunks = []
+    text = ""
 
     for item in results["elastic_results"]:
-        context += (
-            item["_source"]["content"]
-            + "\n"
-        )
+        text = item["_source"]["content"]
+
+        print("ELASTIC TEXT FOUND:", text[:100])
+        
+        if text not in seen:
+            seen.add(text)
+            chunks.append(text)
 
     for doc in results["vector_results"]:
-        context += (
-            doc.page_content
-            + "\n"
-        )
+        text = doc.page_content
 
-    previous_chats = get_recent_memory(
-        db,
-        user_id,
-        limit=5
-    )
+        print("VECTOR TEXT FOUND:", text[:100])
 
-    memory_text = memory_to_text(
-        previous_chats
-    )
+        if text not in seen:
+            seen.add(text)
+            chunks.append(text)
 
-    memory = get_chat_memory(
-        user_id
-    )
+    context = "\n".join(chunks)
 
-    memory_context = build_memory_context(
-        memory
-    )
+    print("CHUNKS COUNT:", len(chunks))
+    print("CONTEXT:")
+    print(context)
+
+    if not context.strip():
+        return {
+            "answer": "No relevant information found.",
+            "context": ""
+    }
 
     prompt = f"""
-Previous Conversation:
+    You are a RAG assistant.
 
-{memory_context}
+    Answer ONLY from the provided context.
 
-Context:
+    If the answer cannot be found in the context, say:
+    "I could not find this information in the provided documents."
 
-{context}
+    Context:
+    {context}
 
-Question:
-
-{question}
-
-Answer clearly.
-"""
+    Question:
+    {question}
+    """
 
     answer = llm.invoke(prompt)
 
