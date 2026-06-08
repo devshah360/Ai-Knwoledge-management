@@ -29,6 +29,8 @@ from app.middlewave.metrics_middleware import MetricsMiddleware
 from app.routes.system_routes import router as system_router
 from app.routes.sync_dashboard_routes import router as sync_dashboard_router
 from app.routes.graph_routes import router as graph_router
+from fastapi.staticfiles import StaticFiles
+
 
 
 
@@ -87,6 +89,11 @@ app.add_exception_handler(
 # Rate Limiter
 app.state.limiter = limiter
 
+app.mount(
+    "/files",
+    StaticFiles(directory="app/uploads"),
+    name="files"
+)
 
 @app.get("/")
 def home():
@@ -135,57 +142,111 @@ def manager_dashboard(
         "message": "Manager Dashboard"
     }
 
-@app.post("/chat")
-async def chat(
-    request: dict
-):
+@app.get("/dashboard/stats")
+def dashboard_stats():
 
     return {
-        "answer":
-            "Employees receive 12 casual leaves.",
-        "sources": [
-            {
-                "document":
-                    "company_policy.pdf",
-                "page": 3,
-                "score": 0.88,
+        "documents": 250,
+        "users": 35,
+        "queries": 8200,
+        "tasks": 15
+    }
 
-                "pdf_url": "http://localhost:8000/files/company_policy.pdf"
+@app.get("/dashboard/search-analytics")
+def search_analytics():
+
+    return [
+        {"day":"Mon","count":120},
+        {"day":"Tue","count":160},
+        {"day":"Wed","count":180},
+        {"day":"Thu","count":220},
+        {"day":"Fri","count":200}
+    ]
+
+@app.get("/dashboard/upload-analytics")
+def upload_analytics():
+
+    return [
+        {"month":"Jan","count":50},
+        {"month":"Feb","count":75},
+        {"month":"Mar","count":120},
+        {"month":"Apr","count":180},
+        {"month":"May","count":250}
+    ]
+@app.get("/chat/history")
+def get_chat_history():
+
+    return [
+        {
+            "id": 1,
+            "title":
+                "Leave Policy",
+            "created_at":
+                "2025-06-01"
+        },
+        {
+            "id": 2,
+            "title":
+                "Travel Policy",
+            "created_at":
+                "2025-06-02"
+        }
+    ]
+
+@app.get("/chat/history/{chat_id}")
+def get_chat(chat_id: int):
+
+    return {
+        "id": chat_id,
+
+        "messages": [
+
+            {
+                "role": "user",
+                "content":
+                    "Leave Policy?"
+            },
+
+            {
+                "role": "assistant",
+                "content":
+                    "12 casual leaves"
             }
+
         ]
     }
 
-@app.get("/chat/history")
-def get_chat_history():
-    return [{
-        "id":1,
-        "title": "Leave Policy",
-        "created_at": "2025-06-01"
-    },
-    {
-        "id":2,
-        "title": "Travel Policy",
-        "created_at": "2025-06-02"
-    },
-]
-
-@app.get("/chat/history/{chat_id}")
-def get_chat(chat_id:int):
-    return {
-        "id": chat_id,
-        "messages" : [{
-            "role" : "user",
-            "content" : "Leave Policy?"
-        },
-        {
-            "role" : "Assistant",
-            "content" : "12 causal leaves"
-        }
-    ]
-}
-
 @app.delete("/chat/history/{chat_id}")
-def delete_chat(chat_id : int):
+def delete_chat(chat_id: int):
+
     return {
-        "message": "deleted"
+        "message":
+            "deleted"
+    }
+
+@app.post("/login")
+def login():
+
+    return {
+        "access_token":
+            "jwt_token_here",
+
+        "role":
+            "admin"
+    }
+
+@app.get("/users/me")
+def current_user():
+
+    return {
+        "id": 1,
+
+        "name":
+            "Admin User",
+
+        "email":
+            "admin@test.com",
+
+        "role":
+            "admin"
     }

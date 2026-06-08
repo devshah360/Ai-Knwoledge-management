@@ -10,9 +10,8 @@ from app.services.memory_service import (
 )
 from app.models.chat_model import ChatHistory
 from app.services.mongo_service import (
-    get_chat_memory,
-    save_chat_memory,
-    build_memory_context
+    create_conversation,
+    add_message
 )
 
 llm = OllamaLLM(
@@ -80,9 +79,20 @@ def rag_chat(question,db,user_id,top_k=3):
 
     answer = llm.invoke(prompt)
 
-    save_chat_memory(
-        user_id,
-        question,
+    conversation_id = create_conversation(
+    user_id=user_id,
+    title=question[:50]
+)
+
+    add_message(
+        conversation_id,
+        "user",
+        question
+    )
+
+    add_message(
+        conversation_id,
+        "assistant",
         answer
     )
 
@@ -106,6 +116,7 @@ def rag_chat(question,db,user_id,top_k=3):
     print("store")
 
     return {
-        "answer": answer,
-        "context": context
-    }
+    "conversation_id": conversation_id,
+    "answer": answer,
+    "context": context
+}
