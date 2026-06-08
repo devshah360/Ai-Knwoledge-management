@@ -18,17 +18,21 @@ router = APIRouter(
 )
 
 @router.get("/stats")
-def dashboard_state(db:Session = Depends(get_db),current_user = Depends(get_current_user)):
+def dashboard_state(db:Session = Depends(get_db),#current_user = Depends(get_current_user)
+                    ):
         stats = get_dashboard_state(db)
         return stats
 
 @router.get("/charts/uploads")
-def upload_chart(db:Session = Depends(get_db),current_user = Depends(get_current_user)):
+def upload_chart(db:Session = Depends(get_db),#current_user = Depends(get_current_user)
+                ):
         chart = document_upload_chart(db)
         return chart
 
 @router.get("/insights")
-def ai_insights(db:Session = Depends(get_db),current_user = Depends(get_current_user)):
+def ai_insights(db:Session = Depends(get_db),
+                #current_user = Depends(get_current_user)
+                ):
         stats = get_dashboard_state(db)
         insights = generate_dashboard_insight(stats)
         return {"insights":insights}
@@ -36,7 +40,7 @@ def ai_insights(db:Session = Depends(get_db),current_user = Depends(get_current_
 @router.get("/search-trend")
 def search_trends(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     return search_trend(db)
 
@@ -44,7 +48,7 @@ def search_trends(
 @router.get("/upload-trend")
 def upload_trends(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     return upload_trend(db)
 
@@ -52,7 +56,7 @@ def upload_trends(
 @router.get("/activity-chart")
 def activity(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     return activity_chart(db)
 
@@ -60,7 +64,7 @@ def activity(
 @router.get("/top-searches")
 def searches(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     return top_searches(db)
 
@@ -68,7 +72,7 @@ def searches(
 @router.get("/active-users")
 def users(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     return active_users(db)
 
@@ -81,13 +85,13 @@ from app.services.insight_service import (
 @router.get("/insights-v2")
 def insights(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     return generate_insights(db)
 
 @router.get("/workflow-health")
 def workflow_health(
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
 
     return {
