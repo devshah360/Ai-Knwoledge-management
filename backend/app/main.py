@@ -29,8 +29,10 @@ from app.middlewave.metrics_middleware import MetricsMiddleware
 from app.routes.system_routes import router as system_router
 from app.routes.sync_dashboard_routes import router as sync_dashboard_router
 from app.routes.graph_routes import router as graph_router
+from fastapi import UploadFile,File
 from fastapi.staticfiles import StaticFiles
-
+from fastapi.responses import StreamingResponse
+import asyncio
 
 
 
@@ -141,6 +143,12 @@ def manager_dashboard(
     return {
         "message": "Manager Dashboard"
     }
+@app.post("/documents/upload")
+async def upload_document(file: UploadFile = File (...)):
+    return {
+        "filename": file.filename,
+        "status": "uploaded"
+    }
 
 @app.get("/dashboard/stats")
 def dashboard_stats():
@@ -250,3 +258,25 @@ def current_user():
         "role":
             "admin"
     }
+
+@app.post("/chat/stream")
+async def stream_chat():
+    async def generate():
+
+        text = """
+        Employee receive
+        12 casual leaves,
+        12 sick leave,
+        and 15 annual leaves,
+        """
+
+        for word in text.split():
+
+            yield word + " "
+
+            await asyncio.sleep(0.1)
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/plain"
+        )
