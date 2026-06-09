@@ -18,10 +18,25 @@ router = APIRouter(
 )
 
 @router.get("/stats")
-def dashboard_state(db:Session = Depends(get_db),#current_user = Depends(get_current_user)
-                    ):
-        stats = get_dashboard_state(db)
-        return stats
+def dashboard_state(
+    db: Session = Depends(get_db),
+):
+    stats = get_dashboard_state(db)
+
+    return {
+        "total_documents": stats.get(
+            "total_documents", 0
+        ),
+        "total_users": stats.get(
+            "total_user", 0
+        ),
+        "total_queries": stats.get(
+            "total_queries", 0
+        ),
+        "total_ai_chats": stats.get(
+            "total_ai_chat", 0
+        )
+    }
 
 @router.get("/charts/uploads")
 def upload_chart(db:Session = Depends(get_db),#current_user = Depends(get_current_user)
