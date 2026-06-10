@@ -30,6 +30,10 @@ from app.routes.system_routes import router as system_router
 from app.routes.sync_dashboard_routes import router as sync_dashboard_router
 from app.routes.graph_routes import router as graph_router
 from fastapi.staticfiles import StaticFiles
+from app.routes.notification_routes import (
+    router as notification_router
+)
+
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login"
@@ -73,6 +77,9 @@ app.include_router(migration_router)
 app.include_router(system_router)
 app.include_router(sync_dashboard_router)
 app.include_router(graph_router)
+app.include_router(
+    notification_router
+)
 
 app.add_middleware(
     MetricsMiddleware

@@ -1,21 +1,25 @@
-from pydantic import BaseModel,EmailStr
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 
-class UserCreate(BaseModel): #userequest karna ka method
-        username : str
 
-        email : EmailStr
+class UserCreate(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
 
-        password : str
 
-class UserResponse(BaseModel): #userresponse ko lene ka method
-        id : int
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
 
-        username : str
 
-        email : str
-       
-        role : str
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: str
 
-        class Config:
-                form_attributes = True
+    class Config:
+        from_attributes = True

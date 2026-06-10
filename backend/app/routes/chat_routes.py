@@ -7,7 +7,7 @@ from app.services.rag_service import rag_chat
 from app.core.rate_limit import limiter
 from fastapi.responses import StreamingResponse
 import asyncio
-
+from app.services.notification_service import create_notification
 router = APIRouter(
     prefix="/chat",
     tags=["AI Workflow Chat"]
@@ -20,10 +20,17 @@ def chat(
     question: str,
     db: Session = Depends(get_db),
 ):
-    return rag_chat(
-        question,
-        db,
+    result = rag_chat(
+    question,
+    db
+)
+
+    create_notification(
+        "Workflow execution completed",
+        "success"
     )
+
+    return result
 
 @router.post("/stream")
 async def stream_chat():

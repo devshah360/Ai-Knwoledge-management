@@ -8,9 +8,11 @@ from app.schemas.document_schema import DocumentResponse
 from app.services.document_service import save_uploaded_file
 from app.services.elastic_service import remove_deleted_document
 from app.services.vectorstore_service import delete_document_chunks
+from app.services.audit_service import create_log
 from app.models.document_model import Document
 from app.utils.file_validator import validate_file
 from app.celery_worker import celery
+from app.services.notification_service import create_notification
 
 router = APIRouter(
     prefix="/documents",
@@ -21,10 +23,10 @@ router = APIRouter(
 @router.get("/", response_model=list[DocumentResponse])
 def get_documents(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     documents = db.query(Document).filter(
-        Document.owner_id == current_user.id
+    #    Document.owner_id == current_user.id
     ).all()
 
     return documents
@@ -34,7 +36,7 @@ def get_documents(
 def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     try:
         content = file.file.read()
@@ -54,8 +56,17 @@ def upload_document(
 
     document = save_uploaded_file(
         file,
-        current_user,
+       # current_user,
         db
+    )
+    create_notification(
+    f"Document Indexed: {file.filename}",
+    "success"
+)
+    create_log(
+        db,
+       # current_user.id,
+        f"Uploaded Document: {file.filename}"
     )
 
     return document
@@ -65,11 +76,11 @@ def upload_document(
 def delete_document(
     document_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+   # current_user=Depends(get_current_user)
 ):
     document = db.query(Document).filter(
         Document.id == document_id,
-        Document.owner_id == current_user.id
+        #Document.owner_id == current_user.id
     ).first()
 
     if not document:
@@ -78,6 +89,15 @@ def delete_document(
             detail="Document not found"
         )
 
+    create_log(
+        db,
+       # current_user.id,
+        f"Deleted Document: {document.filename}"
+    )
+    create_notification(
+    f"Document Deleted: {document.filename}",
+    "warning"
+)
     delete_document_chunks(document_id)
 
     remove_deleted_document(document_id)
@@ -95,11 +115,11 @@ def rename_document(
     document_id: int,
     data: DocumentResponse,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+   # current_user=Depends(get_current_user)
 ):
     document = db.query(Document).filter(
         Document.id == document_id,
-        Document.owner_id == current_user.id
+       # Document.owner_id == current_user.id
     ).first()
 
     if not document:
@@ -108,10 +128,18 @@ def rename_document(
             detail="Document not found"
         )
 
+    old_name = document.filename
+
     document.filename = data.filename
 
     db.commit()
     db.refresh(document)
+
+    create_log(
+        db,
+       # current_user.id,
+        f"Renamed Document: {old_name} -> {data.filename}"
+    )
 
     return {
         "message": "Document renamed successfully",
@@ -126,11 +154,11 @@ def rename_document(
 def reindex_document(
     document_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
     document = db.query(Document).filter(
         Document.id == document_id,
-        Document.owner_id == current_user.id
+       # Document.owner_id == current_user.id
     ).first()
 
     if not document:
@@ -139,10 +167,11 @@ def reindex_document(
             detail="Document not found"
         )
 
-    # TODO:
-    # Trigger your indexing task here
-    # Example:
-    # task = process_document.delay(document_id)
+    create_log(
+        db,
+       # current_user.id,
+        f"Reindexed Document: {document.filename}"
+    )
 
     return {
         "message": "Re-index started",

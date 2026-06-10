@@ -12,28 +12,36 @@ router = APIRouter(
 )
 
 @router.post("/login")
-def login(form_data :OAuth2PasswordRequestForm = Depends(),db :Session=Depends(get_db)):
-        token = login_user(
-                form_data.username,
-                form_data.password,
-                db
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    token = login_user(
+        form_data.username,
+        form_data.password,
+        db
+    )
+
+    if not token:
+
+        create_log(
+            db,
+            None,
+            f"Failed Login: {form_data.username}"
         )
 
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Credentials"
+        )
 
-        if not token:
+    create_log(
+        db,
+        None,
+        f"Successful Login: {form_data.username}"
+    )
 
-                create_log(
-                db,
-                None,
-                "Failed Login"
-                )
-
-                raise HTTPException(
-                        status_code=401,
-                        detail="Invalid Credentials"
-                )
-
-        return{
-                "access_token":token,
-                "token_type": "bearer"
-        }
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
