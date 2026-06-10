@@ -9,9 +9,8 @@ db = client["knowledge-management"]
 chat_collection = db["chat_memory"]
 
 
-def create_conversation(user_id, title="New Chat"):
+def create_conversation( title="New Chat"):
     result = chat_collection.insert_one({
-        "user_id": user_id,
         "title": title,
         "messages": [],
         "created_at": datetime.utcnow()

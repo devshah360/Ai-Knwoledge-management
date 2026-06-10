@@ -19,7 +19,7 @@ llm = OllamaLLM(
     base_url=OLLAMA_URL
 )
 
-def rag_chat(question,db,user_id,top_k=3):
+def rag_chat(question,db,top_k=3):
 
     print("start")
 
@@ -80,7 +80,6 @@ def rag_chat(question,db,user_id,top_k=3):
     answer = llm.invoke(prompt)
 
     conversation_id = create_conversation(
-    user_id=user_id,
     title=question[:50]
 )
 
@@ -105,7 +104,6 @@ def rag_chat(question,db,user_id,top_k=3):
         question=question,
         answer=answer,
         sources="RAG",
-        user_id=user_id
     )
 
     print("reached")

@@ -1,5 +1,5 @@
 from fastapi import APIRouter,Depends
-from app.middlewave.auth_middleware import get_current_user
+from app.services.elastic_service import es
 from app.services.elastic_service import search_documents
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -14,7 +14,7 @@ router = APIRouter(
 def serach(
         query:str,
         db:Session = Depends(get_db),
-        current_user = Depends(get_current_user)
+        # current_user = Depends(get_current_user)
 ):
         results = search_documents(query)
 
@@ -34,3 +34,49 @@ def health():
                 "chroma":"running",
                 "rag":"running"
         }
+
+@router.get("")
+def search(q:str):
+        response = es.search(
+                index="documents",
+
+                query={
+                        "multi-match": {
+                                "query":q,
+                                "fields":[
+                                        "content",
+                                        "file"
+                                ]
+                        }
+                },
+                highlight={
+                        "fields":{
+                                "content": {}
+                        }
+                }
+        )
+
+        results = []
+        
+        for hit in response["hits"]["hits"]:
+                snippet = ""
+
+                if "highlight" in hit:
+                        snippet = hit ["highlight"]["content"][0]
+                else:
+                        snippet = hit ["_source"]["content"][:200]
+                results.append({
+                        "id": hit["_id"],
+                        "title": hit["_source"]["title"],
+                        "snippet": hit["_source"]["content"][:200],
+                        "score":hit["_score"]
+                })
+        return results
+
+@router.get("/suggestions")
+def suggestions(q:str):
+        return ["Leave Policy" ,"Travel Policy"]
+
+@router.get("/log")
+def search_log(query:str):
+        return { "message" : "logged"}

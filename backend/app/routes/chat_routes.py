@@ -19,12 +19,10 @@ def chat(
     request: Request,
     question: str,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
 ):
     return rag_chat(
         question,
         db,
-        current_user.id
     )
 
 @router.post("/stream")
