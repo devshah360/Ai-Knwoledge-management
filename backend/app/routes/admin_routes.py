@@ -135,3 +135,18 @@ def dashboard(
                 "chats": db.query(ChatHistory).count(),
                 "seaches": db.query(SearchHistory).count(),
         }
+
+@router.get("/logs")
+def activity_logs(db: Session = Depends(get_db)):
+
+        logs = (db.query(AuditLog).order_by(AuditLog.id.desc()).limit(100).all())
+
+        return {
+                "logs":[{
+                        "id": log.id,
+                        "action": log.action,
+                        "created_at": log.created_at
+                }
+                for log in logs
+        ]
+}

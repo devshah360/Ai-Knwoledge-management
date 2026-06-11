@@ -19,21 +19,51 @@ router = APIRouter(
 def serach(
     query: str,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    #current_user=Depends(get_current_user)
 ):
-    results = search_documents(query)
-
-    save_search(
-        db,
-        query
+    response = es.search(
+        index="documents",
+        query={
+            "multi_match": {
+                "query": query,
+                "fields": [
+                    "filename",
+                    "content"
+                ]
+            }
+        },
+        highlight={
+            "fields": {
+                "content": {}
+            }
+        }
     )
+
+    results = []
+
+    for hit in response["hits"]["hits"]:
+
+        snippet = (
+            hit.get("highlight",{})
+            .get("content",
+                 [hit["_source"]
+                  ["content"][:200]]
+                  )[0]
+        )
+
+        results.append({
+            "id": hit["_id"],
+            "title": hit["_source"]["filename"],
+            "snippet": snippet,
+            "score": hit["_score"]
+        })
+
+    save_search(db,query)
 
     create_log(
         db,
-        current_user.id,
         f"Search: {query}"
     )
-
     return results
 
 
@@ -57,58 +87,38 @@ def health():
         "rag": "running"
     }
 
+@router.get("/suggestions")
+def suggestions(query: str):
 
-@router.get("")
-def search(q: str):
     response = es.search(
         index="documents",
         query={
-            "multi_match": {
-                "query": q,
-                "fields": [
-                    "content",
-                    "file"
-                ]
-            }
-        },
-        highlight={
-            "fields": {
-                "content": {}
-            }
-        }
-    )
-
-    results = []
-
-    for hit in response["hits"]["hits"]:
-
-        snippet = ""
-
-        if "highlight" in hit:
-            snippet = hit["highlight"]["content"][0]
-        else:
-            snippet = hit["_source"]["content"][:200]
-
-        results.append({
-            "id": hit["_id"],
-            "title": hit["_source"]["title"],
-            "snippet": snippet,
-            "score": hit["_score"]
-        })
-
-    return results
-
-
-@router.get("/suggestions")
-def suggestions(q: str):
+            "match_phrase_prefix":{
+                "filename":query
+                }
+            },
+            size=5
+        )
+    
     return [
-        "Leave Policy",
-        "Travel Policy"
+        hit["_source"]["filename"]
+        for hit in response["hits"]["hits"]
     ]
 
 
 @router.get("/log")
-def search_log(query: str):
-    return {
-        "message": "logged"
+def search_log(db:Session = Depends(get_db)):
+
+    searches = (
+        db.query(SearchHistory)
+        .order_by(SearchHistory.id.desc())
+        .limit(50)
+        .all()
+    )
+    return [{
+        "id": search.id,
+        "query": search.query,
+        "created_at": search.created_at
     }
+    for search in searches
+]

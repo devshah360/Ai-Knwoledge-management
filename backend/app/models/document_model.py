@@ -24,7 +24,7 @@ class Document(Base):
 
         content = Column(Text)
 
-        owner_id = Column(Integer,ForeignKey("users.id"))
+        owner_id = Column(Integer,ForeignKey("users.id"),nullable=False) 
         
         created_at = Column(DateTime,default=datetime.utcnow)
 

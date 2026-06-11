@@ -12,7 +12,7 @@ UPLOADED_FOLDER = "app/uploads"
 
 def save_uploaded_file(
                 file,
-                current_user,
+                #current_user,
                 db:Session
 ):
         
@@ -47,7 +47,7 @@ def save_uploaded_file(
                 content = extracted_text,
                 embedding=embedding,
                 chunks = chunks,
-                owner_id = current_user.id
+                #owner_id = current_user.id
         ) 
 
         db.add(new_document)
@@ -63,7 +63,7 @@ def save_uploaded_file(
                 add_document_chunks(new_document.id,chunks)
                 
         
-        #index_document(new_document)
+        index_document(new_document)
         return new_document
 
         

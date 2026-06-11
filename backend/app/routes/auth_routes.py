@@ -37,7 +37,7 @@ def login(
 
     create_log(
         db,
-        None,
+        #None,
         f"Successful Login: {form_data.username}"
     )
 

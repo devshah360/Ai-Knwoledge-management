@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class DocumentResponse(BaseModel):
         id : int
@@ -6,7 +7,10 @@ class DocumentResponse(BaseModel):
         filepath : str
         filetype : str
         content_preview : str | None = None
-        owner_id : int
+        owner_id : Optional[int] | None 
 
         class Config:
                 form_attributes = True
+
+class RenameDocumentResponse(BaseModel):
+        filename : str
