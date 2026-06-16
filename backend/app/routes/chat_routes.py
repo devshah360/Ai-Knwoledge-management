@@ -31,26 +31,3 @@ def chat(
     )
 
     return result
-
-@router.post("/stream")
-async def stream_chat():
-
-    async def generate():
-
-        text = """
-        Employee receive
-        12 casual leaves,
-        12 sick leave,
-        and 15 annual leaves.
-        """
-
-        for word in text.split():
-
-            yield word + " "
-
-            await asyncio.sleep(0.1)
-
-    return StreamingResponse(
-        generate(),
-        media_type="text/plain"
-    )

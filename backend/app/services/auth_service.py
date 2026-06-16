@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-
+from fastapi import Depends
+from app.middlewave.auth_middleware import get_current_user
 from app.models.user_model import User
 from app.utils.security import (
     verify_password,
@@ -11,7 +12,8 @@ from app.services.audit_service import create_log
 def login_user(
     email: str,
     password: str,
-    db: Session
+    db: Session,
+    current_user = Depends(get_current_user)
 ):
     user = db.query(User).filter(
         User.email == email
@@ -20,6 +22,7 @@ def login_user(
     if not user:
         create_log(
             db,
+            current_user,
             f"Failed Login: {email}"
         )
         return None
@@ -30,6 +33,7 @@ def login_user(
     ):
         create_log(
             db,
+            current_user,
             f"Failed Login: {email}"
         )
         return None

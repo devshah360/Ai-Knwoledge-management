@@ -15,7 +15,7 @@ router = APIRouter(
 @router.post("/login")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     email = form_data.username
     password = form_data.password
@@ -27,10 +27,10 @@ def login(
     )
 
     if not token:
-        create_log(
-            db,
-            f"Failed Login: {email}"
-        )
+        # create_log(
+        #     db,
+        #     f"Failed Login: {email}"
+        # )
 
         raise HTTPException(
             status_code=401,
@@ -41,10 +41,10 @@ def login(
         User.email == email
     ).first()
 
-    create_log(
-        db,
-        f"Successful Login: {email}"
-    )
+    #create_log(
+      #  db,
+      #  f"Successful Login: {email}"
+    #)
 
     return {
         "access_token": token,

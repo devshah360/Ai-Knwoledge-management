@@ -19,7 +19,7 @@ router = APIRouter(
 def serach(
     query: str,
     db: Session = Depends(get_db),
-    #current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     response = es.search(
         index="documents",
@@ -62,6 +62,7 @@ def serach(
 
     create_log(
         db,
+        current_user.id,
         f"Search: {query}"
     )
     return results

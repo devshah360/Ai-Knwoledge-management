@@ -30,10 +30,10 @@ router = APIRouter(
 @router.get("/", response_model=list[DocumentResponse])
 def get_documents(
     db: Session = Depends(get_db),
-    #current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     documents = db.query(Document).filter(
-    #    Document.owner_id == current_user.id
+        Document.owner_id == current_user.id
     ).all()
 
     return documents
@@ -43,7 +43,7 @@ def get_documents(
 def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    #current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     try:
         content = file.file.read()
@@ -63,8 +63,9 @@ def upload_document(
 
     document = save_uploaded_file(
         file,
+        current_user,
         db
-       # current_user,
+        
     )
     create_notification(
     f"Document Indexed: {file.filename}",
@@ -72,7 +73,7 @@ def upload_document(
 )
     create_log(
         db,
-       # current_user.id,
+       current_user.id,
         f"Uploaded Document: {file.filename}"
     )
 
@@ -83,11 +84,11 @@ def upload_document(
 def delete_document(
     document_id: int,
     db: Session = Depends(get_db),
-   # current_user=Depends(get_current_user)
+   current_user=Depends(get_current_user)
 ):
     document = db.query(Document).filter(
         Document.id == document_id,
-        #Document.owner_id == current_user.id
+        Document.owner_id == current_user.id
     ).first()
 
     if not document:
@@ -98,7 +99,7 @@ def delete_document(
 
     create_log(
         db,
-       # current_user.id,
+        current_user.id,
         f"Deleted Document: {document.filename}"
     )
     create_notification(
@@ -122,7 +123,7 @@ def rename_document(
     document_id: int,
     data: RenameDocumentResponse,
     db: Session = Depends(get_db),
-   # current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     document = db.query(Document).filter(
         Document.id == document_id,
@@ -144,7 +145,7 @@ def rename_document(
 
     create_log(
         db,
-       # current_user.id,
+        current_user.id,
         f"Renamed Document: {old_name} -> {data.filename}"
     )
 
@@ -161,11 +162,11 @@ def rename_document(
 def reindex_document(
     document_id: int,
     db: Session = Depends(get_db),
-    #current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     document = db.query(Document).filter(
         Document.id == document_id,
-       # Document.owner_id == current_user.id
+       Document.owner_id == current_user.id
     ).first()
 
     if not document:
@@ -205,7 +206,7 @@ def reindex_document(
 
     create_log(
         db,
-       # current_user.id,
+        current_user.id,
         f"Reindexed Document: {document.filename}"
     )
 
