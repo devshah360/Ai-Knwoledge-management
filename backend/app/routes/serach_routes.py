@@ -123,3 +123,12 @@ def search_log(db:Session = Depends(get_db)):
     }
     for search in searches
 ]
+
+@router.get("/debug")
+def debug():
+    return es.search(
+        index="documents",
+        query={
+            "match_all": {}
+        }
+    )

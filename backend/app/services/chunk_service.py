@@ -1,6 +1,16 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+
 def chunk_text(text):
-        spiltter = RecursiveCharacterTextSplitter(chunk_size = 500, chunk_overlap = 50)
-        chunks = spiltter.split_text(text)
-        return chunks
+
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=200,
+        separators=["\n\n", "\n", ".", " ", ""]
+    )
+
+    chunks = splitter.split_text(text)
+
+    print("TOTAL CHUNKS:", len(chunks))
+
+    return chunks

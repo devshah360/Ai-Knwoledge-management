@@ -1,10 +1,7 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
-es = Elasticsearch("https://localhost:9200",basic_auth=("elastic", 
-                                                        #"t-KEPBwQn4dVQfRXBxox"
-                                                        "Devshah@1"
-                                                        ),verify_certs=False)
+es = Elasticsearch("https://localhost:9200",basic_auth=("elastic", "Devshah@1"),verify_certs=False)
 
 INDEX_NAME = "documents"
 
@@ -32,9 +29,6 @@ create_index_if_not_exists()
 
 
 def index_document(document):
-    """
-    Index a document in Elasticsearch.
-    """
 
     data = {
         "filename": document.filename,
@@ -42,12 +36,21 @@ def index_document(document):
         "owner_id": document.owner_id
     }
 
+    print("=" * 50)
+    print("INDEXING DOCUMENT")
+    print("ID:", document.id)
+    print("Filename:", document.filename)
+    print("Content Length:", len(document.content))
+    print("=" * 50)
+
     response = es.index(
         index=INDEX_NAME,
         id=document.id,
         document=data,
         refresh=True
     )
+
+    print(response)
 
     return response
 

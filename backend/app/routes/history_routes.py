@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException
+from bson import ObjectId
 
-from app.database import get_db
-from app.models.chat_model import ChatHistory
+from app.services.mongo_service import chat_collection
 
 router = APIRouter(
     prefix="/chat/history",
@@ -11,77 +10,97 @@ router = APIRouter(
 
 
 @router.get("/")
-def history(
-    page: int = 1,
-    db: Session = Depends(get_db)
-):
-    page_size = 10
+def history():
 
-    chats = (
-        db.query(ChatHistory)
-        .order_by(ChatHistory.id.desc())
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .all()
+    chats = list(
+
+        chat_collection
+
+        .find()
+
+        .sort("created_at", -1)
+
     )
 
     return [
-    {
-        "id": chat.id,
-        "title": chat.question,
-        "created_at": chat.created_at
-    }
-    for chat in chats
-]
+
+        {
+
+            "id": str(chat["_id"]),
+
+            "title": chat["title"],
+
+            "created_at": chat["created_at"]
+
+        }
+
+        for chat in chats
+
+    ]
 
 
 @router.get("/{chat_id}")
-def get_chat(
-    chat_id: int,
-    db: Session = Depends(get_db)
-):
-    chat = (
-        db.query(ChatHistory)
-        .filter(ChatHistory.id == chat_id)
-        .first()
+def get_chat(chat_id: str):
+
+    chat = chat_collection.find_one(
+
+        {
+
+            "_id": ObjectId(chat_id)
+
+        }
+
     )
 
     if not chat:
+
         raise HTTPException(
+
             status_code=404,
+
             detail="Chat not found"
+
         )
 
     return {
-    "id": chat.id,
-    "title": chat.question,
-    "question": chat.question,
-    "answer": chat.answer,
-    "sources": chat.sources,
-    "created_at": chat.created_at
-}
+
+        "_id": str(chat["_id"]),
+
+        "title": chat["title"],
+
+        "messages": chat["messages"],
+
+        "created_at": chat["created_at"]
+
+    }
 
 
 @router.delete("/{chat_id}")
-def delete_chat(
-    chat_id: int,
-    db: Session = Depends(get_db)
-):
-    chat = (
-        db.query(ChatHistory)
-        .filter(ChatHistory.id == chat_id)
-        .first()
+
+def delete_chat(chat_id: str):
+
+    result = chat_collection.delete_one(
+
+        {
+
+            "_id": ObjectId(chat_id)
+
+        }
+
     )
 
-    if not chat:
+    if result.deleted_count == 0:
+
         raise HTTPException(
+
             status_code=404,
+
             detail="Chat not found"
+
         )
 
-    db.delete(chat)
-    db.commit()
-
     return {
+
         "message": "Chat deleted successfully"
+
     }

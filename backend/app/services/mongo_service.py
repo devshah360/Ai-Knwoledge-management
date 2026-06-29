@@ -2,47 +2,100 @@ from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
 
-client = MongoClient("mongodb://localhost:27017")
+
+client = MongoClient(
+
+    "mongodb://localhost:27017"
+
+)
 
 db = client["knowledge-management"]
 
 chat_collection = db["chat_memory"]
 
 
-def create_conversation( title="New Chat"):
+def create_conversation(
+
+    title="New Chat"
+
+):
+
     result = chat_collection.insert_one({
+
         "title": title,
+
         "messages": [],
+
         "created_at": datetime.utcnow()
+
     })
 
     return str(result.inserted_id)
 
 
-def add_message(conversation_id, role, content):
+
+def add_message(
+
+    conversation_id,
+
+    role,
+
+    content
+
+):
+
     chat_collection.update_one(
-        {"_id": ObjectId(conversation_id)},
+
         {
+
+            "_id":
+
+            ObjectId(conversation_id)
+
+        },
+
+        {
+
             "$push": {
+
                 "messages": {
+
                     "role": role,
+
                     "content": content,
+
                     "timestamp": datetime.utcnow()
+
                 }
+
             }
+
         }
+
     )
 
 
-def get_conversation(conversation_id):
-    return chat_collection.find_one(
-        {"_id": ObjectId(conversation_id)}
+
+def get_conversation(
+
+    conversation_id
+
+):
+
+    chat = chat_collection.find_one(
+
+        {
+
+            "_id":
+
+            ObjectId(conversation_id)
+
+        }
+
     )
 
+    if chat:
 
-def get_user_conversations(user_id):
-    return list(
-        chat_collection.find(
-            {"user_id": user_id}
-        ).sort("created_at", -1)
-    )
+        chat["_id"] = str(chat["_id"])
+
+    return chat

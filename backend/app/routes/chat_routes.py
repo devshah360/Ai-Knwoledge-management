@@ -14,20 +14,15 @@ router = APIRouter(
 )
 
 @router.post("/")
-@limiter.limit("20/minute")
 def chat(
     request: Request,
     question: str,
+    conversation_id: str = None,
     db: Session = Depends(get_db),
 ):
-    result = rag_chat(
-    question,
-    db
-)
 
-    create_notification(
-        "Workflow execution completed",
-        "success"
+    return rag_chat(
+        question=question,
+        conversation_id=conversation_id,
+        db=db
     )
-
-    return result

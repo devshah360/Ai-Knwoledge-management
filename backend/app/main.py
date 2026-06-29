@@ -139,9 +139,7 @@ def admin_dashboard(
 
 
 @app.get("/manager")
-def manager_dashboard(
-    current_user=Depends(manager_required)
-):
+def manager_dashboard(current_user=Depends(manager_required)):
     return {
         "message": "Manager Dashboard"
     }

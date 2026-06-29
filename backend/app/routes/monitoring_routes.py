@@ -1,55 +1,45 @@
-from fastapi import APIRouter
-from app.database import Session_local
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 from redis import Redis
-from elasticsearch import Elasticsearch
+import psutil
+
+from app.database import Session_local, get_db
+from app.services.elastic_service import es
+from app.services.mongo_service import client as mongo_client
+from app.celery_worker import celery
 
 from app.models.user_model import User
 from app.models.document_model import Document
 from app.models.chat_model import ChatHistory
 from app.models.search_model import SearchHistory
-from fastapi import Depends
-from sqlalchemy.orm import Session
-from app.database import get_db
-
-import psutil
-
-
-
-
-
-
 
 
 router = APIRouter(
     prefix="/monitoring",
     tags=["Monitoring"]
 )
-@router.get("/status")
-def status():
 
-    return {
-        "api":"running",
-        "elastic":"running",
-        "mongo":"running",
-        "redis":"running"
-    }
 
 @router.get("/health")
 def health():
 
-    status = {}
+    status = {
+        "api": "running"
+    }
 
-    status["api"] = "running"
-
+    # SQL Database
     try:
         db = Session_local()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         status["database"] = "running"
-    except:
+    except Exception as e:
+        print("Database Error:", e)
         status["database"] = "down"
     finally:
         db.close()
 
+    # Redis
     try:
         redis_client = Redis(
             host="localhost",
@@ -58,29 +48,57 @@ def health():
         )
         redis_client.ping()
         status["redis"] = "running"
-    except:
+    except Exception as e:
+        print("Redis Error:", e)
         status["redis"] = "down"
 
-    
+    # Elasticsearch
     try:
-        es = Elasticsearch("https://localhost:9200")
-        status["elasticsearch"] = ("running"
-        if  es.ping()
-        else "down"
+        status["elasticsearch"] = (
+            "running"
+            if es.ping()
+            else "down"
         )
-    except:
+    except Exception as e:
+        print("Elasticsearch Error:", e)
         status["elasticsearch"] = "down"
+
+    # MongoDB
+    try:
+        mongo_client.admin.command("ping")
+        status["mongodb"] = "running"
+    except Exception as e:
+        print("Mongo Error:", e)
+        status["mongodb"] = "down"
+
+    # Celery Worker
+    try:
+        redis_client = Redis(
+            host="localhost",
+            port=6379,
+            decode_responses=True
+        )
+
+        redis_client.ping()
+
+        status["celery"] = "running"
+
+    except Exception as e:
+        print("Celery Error:", e)
+        status["celery"] = "down"
 
     return status
 
+
 @router.get("/metrics")
-def metrics(db:Session=Depends(get_db)):
+def metrics(db: Session = Depends(get_db)):
     return {
         "users": db.query(User).count(),
         "documents": db.query(Document).count(),
         "chats": db.query(ChatHistory).count(),
         "searches": db.query(SearchHistory).count()
     }
+
 
 @router.get("/resources")
 def resources():
@@ -91,9 +109,9 @@ def resources():
     return {
         "cpu_percent": psutil.cpu_percent(interval=1),
         "memory_percent": memory.percent,
-        "memory_used_db": round(memory.used / (1024**3) ,2),
-        "memory_total_db": round(memory.total / (1024**3) ,2),
+        "memory_used_gb": round(memory.used / (1024 ** 3), 2),
+        "memory_total_gb": round(memory.total / (1024 ** 3), 2),
         "disk_percent": disk.percent,
-        "disk_used_db": round(disk.used / (1024**3) ,2),
-        "disk_total_db": round(disk.total / (1024**3) ,2),
+        "disk_used_gb": round(disk.used / (1024 ** 3), 2),
+        "disk_total_gb": round(disk.total / (1024 ** 3), 2),
     }

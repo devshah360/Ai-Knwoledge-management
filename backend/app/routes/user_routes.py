@@ -10,7 +10,6 @@ from app.schemas.user_schema import (
 from app.services.user_service import (
     create_new_user,
     get_all_users,
-    get_user_by_id,
     delete_user_by_id
 )
 from app.utils.password_validator import validate_password

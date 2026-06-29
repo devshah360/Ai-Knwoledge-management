@@ -1,38 +1,50 @@
 from app.services.elastic_service import es
 from app.services.vectorstore_service import retrieve_chunks
 
-def elastic_search(query:str):
-        result = es.search(
-                index="documents",
-                body={
-                        "query":{
-                                "multi_match":{
-                                        "query":query,
-                                        "fields":[
-                                                "content",
-                                                "filename"
-                                        ]
-                                }
-                        }
+
+def elastic_search(query: str, top_k=3):
+
+    result = es.search(
+        index="documents",
+        size=top_k,
+        body={
+            "query": {
+                "multi_match": {
+                    "query": query,
+                    "fields": [
+                        "content",
+                        "filename"
+                    ]
                 }
-        )
-        return result["hits"]["hits"]
+            }
+        }
+    )
 
-def semantic_search(query:str):
-        return retrieve_chunks(query,top_k=3)
+    return result["hits"]["hits"]
 
-def hybrid_search(query: str):
 
-    elastic_results = elastic_search(query)
-    vector_results = semantic_search(query)
+def semantic_search(query: str, top_k=3):
 
-    print("\n=== ELASTIC RESULTS ===")
-    for item in elastic_results:
-        print(item["_source"])
+    return retrieve_chunks(
+        query=query,
+        top_k=top_k
+    )
 
-    print("\n=== VECTOR RESULTS ===")
-    for doc in vector_results:
-        print(doc.page_content[:300])
+
+def hybrid_search(query: str, top_k=3):
+
+    elastic_results = elastic_search(
+        query=query,
+        top_k=top_k
+    )
+
+    vector_results = semantic_search(
+        query=query,
+        top_k=top_k
+    )
+
+    print("ELASTIC RESULTS:", len(elastic_results))
+    print("VECTOR RESULTS:", len(vector_results))
 
     return {
         "elastic_results": elastic_results,
