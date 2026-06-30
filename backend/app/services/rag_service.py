@@ -8,8 +8,6 @@ from app.services.search_service import hybrid_search
 
 from app.services.search_analytics_service import save_search
 
-from app.models.chat_model import ChatHistory
-
 from app.services.mongo_service import (
     create_conversation,
     add_message
